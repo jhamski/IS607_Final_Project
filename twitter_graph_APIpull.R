@@ -1,4 +1,5 @@
 # IS607 Data Acquisition and Management | CUNY MS Data Analytics | James Hamski
+# Script 1 - acquire data from the Twitter API, save to local directory
 
 # Project Goal: create a social graph of the R Stats community on Twitter
 # Can we find different domain groups (i.e. biostats, finance)?
@@ -6,6 +7,7 @@
 
 library(twitteR)
 library(dplyr)
+
 
 # Keys stored in a txt file and kept out of Github repo
 key <- scan("api_key.txt", what="charsacter")
@@ -37,13 +39,4 @@ hw.df<-twListToDF(hw)
 
 
 
-#Create graph for small dummy dataset
-#Each list can signify "follows" or "favorited" or "retweeted" (any output that is a username)
-sean <- c("nate", "matt", "sara", "pete", "cate", "laura")
-laura <- c("maura", "sean", "greg", "matt", "sara")
-albert <- c("nate", "sara", "roger", "maura")
 
-
-
-
-#Create graph for real dataset 
