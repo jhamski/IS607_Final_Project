@@ -1,3 +1,7 @@
 .httr-oauth
 
 API_key.txt
+
+.RData
+
+.Rhistory
