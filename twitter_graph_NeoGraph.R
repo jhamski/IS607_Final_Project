@@ -12,16 +12,3 @@
 #devtools::install_github("nicolewhite/RNeo4j")
 library(RNeo4j)
 
-
-#Create graph for small dummy dataset 
-#Each list can signify "follows" or "favorited" or "retweeted" (any output that is a username)
-sean <- c("nate", "matt", "sara", "pete", "cate", "laura")
-laura <- c("maura", "sean", "greg", "matt", "sara")
-albert <- c("nate", "sara", "roger", "maura")
-
-#Create graph for real dataset 
-#Connect to Neo4j after starting the server at the command line. Note that you may need to change the password 
-#in the Neo4j console before moving on. 
-
-graph = startGraph("http://localhost:7474/db/data/", username = "neo4j", password = "msda16")
-clear(graph)

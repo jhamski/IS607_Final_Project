@@ -30,21 +30,22 @@ r.stats.search%>%
   summarise(count = n()) %>%
   arrange(desc(count)) -> r.stats
   
-#Start with Hadley Wickham, well known R Stats package developer/guru
+# Start with Hadley Wickham, well known R Stats package developer/guru
 hw <- getUser("hadleywickham") 
 
-#Note this runs very very slow (due to API limits/throtteling? just size?)
-hw.friends <-hw$getFollowers()
+# Followers
+# Note this runs very very slow (due to API limits/throtteling? just size?)
+hw.followers <-hw$getFollowers(n=500)
+# Save to ensure DF can be used between sessions even if the env is cleared
+save(hw.followers, file="HW_followers.Rda")
 
-hw.favorites <-hw$getFavorites()
+
+# Favorites
+hw.favorites <-hw$getFavorites(n=500)
+
+# Retweets
+hw.retweets <- hw$getRetweets(n=500)
+
 
 hw.favorited <- hw$getFavorited(blockOnRateLimit=TRUE)
-hw.retweets <- hw$getRetweets(blockOnRateLimit=TRUE)
-
-hw.df<-twListToDF(hw)
-
-#Go back to who uses the RStats hashtag the most
-
-
-
 
