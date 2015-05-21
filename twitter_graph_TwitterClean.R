@@ -2,6 +2,6 @@
 # Script 2 - clean data from the Twitter API
 
 
-load("HW_followers.Rda")
-hw.df<-twListToDF(hw.followers)
-hw.followers <- hw.df$screenName
+load("followers_dataset.Rda")
+
+# This script is likely depreciated...

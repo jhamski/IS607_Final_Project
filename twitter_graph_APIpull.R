@@ -24,28 +24,58 @@ setup_twitter_oauth(consumer_key,
 #Who uses the #RStats hashtag the most?
 r.stats.search <- searchTwitter("#Rstats", n=1000)
 
-r.stats.search%>%
-  twListToDF()%>%
+r.stats.search %>%
+  twListToDF() %>%
   group_by(screenName) %>%
   summarise(count = n()) %>%
   arrange(desc(count)) -> r.stats
-  
-# Start with Hadley Wickham, well known R Stats package developer/guru
+
+##########
+# For development/testing, start with Hadley Wickham, well known R Stats package developer/guru 
 hw <- getUser("hadleywickham") 
 
 # Followers
-# Note this runs very very slow (due to API limits/throtteling? just size?)
+#runs slow unless limited by setting n
 hw.followers <-hw$getFollowers(n=500)
+
 # Save to ensure DF can be used between sessions even if the env is cleared
 save(hw.followers, file="HW_followers.Rda")
 
-
 # Favorites
-hw.favorites <-hw$getFavorites(n=500)
+hw.favorites <-hw$getFavorites(n=200)
+save(hw.favorites, file="HW_favorites.Rda")
+##########
 
-# Retweets
-hw.retweets <- hw$getRetweets(n=500)
 
+# Iterate through list of top tweeters, then pull their followers and who they favorite
+# This will run very slow again, may run into API call limits
 
-hw.favorited <- hw$getFavorited(blockOnRateLimit=TRUE)
+twit.list <- r.stats$screenName[1:5]
 
+#twit.list.test <- r.stats$screenName[1:2]
+
+get.followers <-function(screenName){
+  user <- getUser(screenName)
+  followers <- user$getFollowers()
+  followers<-twListToDF(followers)
+  followers <- followers$screenName
+  return(followers)
+      }
+
+followers <- lapply(twit.list, FUN = get.followers)
+followers <- as.data.frame(followers)
+colnames(followers) <- twit.list
+save(followers, file="followers_dataset.Rda")
+
+get.favorites <-function(screenName){
+  user <- getUser(screenName)
+  favorites <- user$getFavorites(n=200)
+  favorites<-twListToDF(favorites)
+  favorites <- favorites$screenName
+  return(favorites)
+      }
+
+favorites <- lapply(twit.list, FUN = get.favorites)
+favorites <- as.data.frame(favorites)
+colnames(favorites) <- twit.list
+save(favorites, file="favorites_dataset.Rda")
