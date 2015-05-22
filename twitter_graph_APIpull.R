@@ -50,7 +50,7 @@ save(hw.favorites, file="HW_favorites.Rda")
 # Iterate through list of top tweeters, then pull their followers and who they favorite
 # This will run very slow again, may run into API call limits
 
-twit.list <- r.stats$screenName[1:5]
+twit.list <- r.stats$screenName[1:50]
 
 #twit.list.test <- r.stats$screenName[1:2]
 
@@ -63,8 +63,7 @@ get.followers <-function(screenName){
       }
 
 followers <- lapply(twit.list, FUN = get.followers)
-followers <- as.data.frame(followers)
-colnames(followers) <- twit.list
+names(followers) <- twit.list
 save(followers, file="followers_dataset.Rda")
 
 get.favorites <-function(screenName){
@@ -76,6 +75,5 @@ get.favorites <-function(screenName){
       }
 
 favorites <- lapply(twit.list, FUN = get.favorites)
-favorites <- as.data.frame(favorites)
-colnames(favorites) <- twit.list
+names(favorites) <- twit.list
 save(favorites, file="favorites_dataset.Rda")
