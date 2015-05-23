@@ -18,6 +18,7 @@ follows <-c("sean","laura","albert")
 
 graph = startGraph("http://localhost:7474/db/data/", username = "neo4j", password = "msda16")
 clear(graph)
+Y
 
 # ensure names are unique
 addConstraint(graph, "Name", "name")

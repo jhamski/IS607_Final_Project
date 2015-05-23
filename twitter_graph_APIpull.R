@@ -50,13 +50,12 @@ save(hw.favorites, file="HW_favorites.Rda")
 # Iterate through list of top tweeters, then pull their followers and who they favorite
 # This will run very slow again, may run into API call limits
 
-twit.list <- r.stats$screenName[1:50]
-
+twit.list <- r.stats$screenName[1:10]
 #twit.list.test <- r.stats$screenName[1:2]
 
 get.followers <-function(screenName){
   user <- getUser(screenName)
-  followers <- user$getFollowers()
+  followers <- user$getFollowers(n=200)
   followers<-twListToDF(followers)
   followers <- followers$screenName
   return(followers)
