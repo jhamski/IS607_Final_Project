@@ -1,0 +1,272 @@
+---
+title: "Text Mining"
+author: "S. Hong, H. Berk, J. Hamski"
+date: "Monday, May 18, 2015"
+output: html_document
+---
+
+Social media has become a key communication platform for professional skills development, in addition to a place to share selfies and rants. For our final project, we aim to analyze the R Project for Statistical Computing (R) community on Twitter to uncover insights into how influence is held and shared. This project will also showcase a variety of skills developed through IS607, including the use of Rest APIs, the R programming language and the neo4j graph database.
+
+
+```{r message=FALSE, warning=FALSE}
+library("twitteR")
+library("wordcloud")
+library("tm")
+library("sentiment")
+library("ggplot2")
+library("Rgraphviz")
+
+key <- scan("C:/Users/Public/api_key.txt", what="character") 
+
+consumer_key <- key[1] 
+consumer_secret <- key[2] 
+access_token <- key[3] 
+access_secret <- key[4] 
+setup_twitter_oauth(consumer_key, 
+                    consumer_secret, 
+                    access_token, 
+                    access_secret)
+```
+
+
+#Rstats Tweets
+```{r message=FALSE, warning=FALSE}
+tweets <- searchTwitter("#rstats", n=1500, lang="en")
+# transform tweets to data frame
+df <- twListToDF(tweets)
+```
+
+#Pydata Tweets
+```{r message=FALSE, warning=FALSE}
+tweets_py <- searchTwitter("#pydata", n=1500, lang="en")
+#transform tweets to data frame
+df2 <- twListToDF(tweets_py)
+```
+
+
+Credit for the Word Cloud and clean-up code goes to the following link:
+http://www.sthda.com/english/wiki/text-mining-and-word-cloud-fundamentals-in-r-5-simple-steps-you-should-know#load-the-text
+
+#R Community Tweets
+
+#Clean dataset
+```{r message=FALSE, warning=FALSE}
+# Use TM (text mining) package
+mycorpus <- Corpus(VectorSource(df$text))
+
+# Text transformation
+fix <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+mycorpus <- tm_map(mycorpus, fix, "/")
+mycorpus <- tm_map(mycorpus, fix, "@")
+mycorpus <- tm_map(mycorpus, fix, "\\|")
+
+# Remove numbers
+mycorpus <- tm_map(mycorpus, removeNumbers)
+# Remove english common stopwords
+mycorpus <- tm_map(mycorpus, removeWords, stopwords("english"))
+# Remove punctuations
+mycorpus <- tm_map(mycorpus, removePunctuation)
+# Eliminate extra white spaces
+mycorpus <- tm_map(mycorpus, stripWhitespace)
+# Remove your own stop word
+# specify your stopwords as a character vector
+mycorpus <- tm_map(mycorpus, removeWords, 
+                   c("http","https", "tco","amp","just","atuqiqdpj","rstats")) 
+# Convert the text to lower case
+mycorpus <- tm_map(mycorpus, content_transformer(tolower))
+
+```
+
+#  Build term doc matrix
+```{r message=FALSE, warning=FALSE}
+dtm <- TermDocumentMatrix(mycorpus)
+a <- as.matrix(dtm)
+b <- sort(rowSums(a),decreasing=TRUE)
+c <- data.frame(word = names(b),freq=b)
+head(c, 10)
+```
+
+#Cluster Dendrogram
+```{r message=FALSE, warning=FALSE}
+#remove sparse terms
+dtm2 <- removeSparseTerms(dtm, sparse = 0.95)
+m2 <- as.matrix(dtm2)
+#cluster terms
+distMatrix <- dist(scale(m2))
+fit <- hclust(distMatrix, method = "ward.D2")
+plot(fit)
+rect.hclust(fit, k=6) #cut tree into 6 clusters
+```
+
+# Word Cloud
+```{r message=FALSE, warning=FALSE}
+set.seed(1234)
+wordcloud(words = c$word, freq = c$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+
+# Find word association
+```{r message=FALSE, warning=FALSE}
+findAssocs(dtm, terms = "statistics", corlimit = 0.4)
+```
+
+# Words frequency bar chart
+```{r message=FALSE, warning=FALSE}
+barplot(c[1:10,]$freq, las = 2, names.arg = c[1:10,]$word,
+        col ="lightblue", main ="Most frequent words",
+        ylab = "Word frequencies")
+```
+
+# Word association graph
+```{r message=FALSE, warning=FALSE}
+(freq.terms <- findFreqTerms(dtm, lowfreq = 45))
+plot(dtm, term = freq.terms, corThreshold = 0.12, weighting = F, attrs=list(node=list(width=20, fontsize=24, fontcolor="blue", color="red")))
+```
+
+# Polarity table
+```{r message=FALSE, warning=FALSE}
+# Classify polarity
+class_pol = classify_polarity(c, algorithm="bayes")
+
+# Get polarity best fit
+polarity = class_pol[,4]
+
+polarity_df = data.frame(text=c, polarity=polarity, stringsAsFactors=FALSE)
+qplot(polarity, data=polarity_df)
+
+```
+
+# Emotion table
+```{r message=FALSE, warning=FALSE}
+#classify emotion
+class_emo = classify_emotion(c, algorithm="bayes", prior=1.0)
+
+#get emotion best fit
+emotion = class_emo[,7]
+
+#substitute NA's by "unknown"
+emotion[is.na(emotion)] = "unknown"
+
+#data frame with results
+emo_df = data.frame(text=c, emotion=emotion, stringsAsFactors=FALSE)
+
+#sort data frame
+emo_df = within(emo_df, emotion <- factor(emotion, levels=names(sort(table(emotion), decreasing=TRUE))))
+  
+#plot distribution of emotions
+ggplot(emo_df, aes(x=emotion)) + geom_bar(aes(y=..count.., fill=emotion)) +
+  scale_fill_brewer(palette="Dark2") + labs(x="emotion categories", y="number of tweets") + geom_text(stat="bin", aes(y = ..count..-0.5, label=..count..))
+```
+
+#Python Community Tweets
+
+#Clean dataset
+```{r message=FALSE, warning=FALSE}
+# Use TM (text mining) package
+mycorpusp <- Corpus(VectorSource(df2$text))
+
+# Text transformation
+fix <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+mycorpusp <- tm_map(mycorpusp, fix, "/")
+mycorpusp <- tm_map(mycorpusp, fix, "@")
+mycorpusp <- tm_map(mycorpusp, fix, "\\|")
+
+# Convert the text to lower case
+mycorpusp <- tm_map(mycorpusp, content_transformer(tolower))
+# Remove numbers
+mycorpusp <- tm_map(mycorpusp, removeNumbers)
+# Remove english common stopwords
+mycorpusp <- tm_map(mycorpusp, removeWords, stopwords("english"))
+# Remove punctuations
+mycorpusp <- tm_map(mycorpusp, removePunctuation)
+# Eliminate extra white spaces
+mycorpusp <- tm_map(mycorpusp, stripWhitespace)
+# Remove your own stop word
+# specify your stopwords as a character vector
+mycorpusp <- tm_map(mycorpusp, removeWords, 
+                   c("http","https", "tco","amp","just","pydata")) 
+
+```
+
+#  Build term doc matrix
+```{r message=FALSE, warning=FALSE}
+dtmp <- TermDocumentMatrix(mycorpusp)
+ap <- as.matrix(dtmp)
+bp <- sort(rowSums(ap),decreasing=TRUE)
+cp <- data.frame(word = names(bp),freq=bp)
+head(cp, 10)
+```
+
+#Cluster Dendrogram
+```{r message=FALSE, warning=FALSE}
+# remove sparse terms
+dtm2p <- removeSparseTerms(dtmp, sparse = 0.95)
+m2p <- as.matrix(dtm2p)
+# cluster terms
+distMatrixp <- dist(scale(m2p))
+fit <- hclust(distMatrixp, method = "ward.D2")
+plot(fit)
+rect.hclust(fit, k=8) #cut tree into 8 clusters
+```
+
+# Word Cloud
+```{r message=FALSE, warning=FALSE}
+set.seed(1234)
+wordcloud(words = cp$word, freq = cp$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+
+# Words frequency bar chart
+```{r message=FALSE, warning=FALSE}
+barplot(cp[1:10,]$freq, las = 2, names.arg = c[1:10,]$word,
+        col ="lightblue", main ="Most frequent words",
+        ylab = "Word frequencies")
+```
+
+# Word association graph
+```{r message=FALSE, warning=FALSE}
+(freq.terms <- findFreqTerms(dtmp, lowfreq = 8))
+plot(dtmp, term = freq.terms, corThreshold = 0.12, weighting = F, attrs=list(node=list(width=20, fontsize=24, fontcolor="blue", color="red")))
+```
+
+# Polarity table
+```{r message=FALSE, warning=FALSE}
+# Classify polarity
+class_polp = classify_polarity(cp, algorithm="bayes")
+
+# Get polarity best fit
+polarityp = class_polp[,4]
+
+polarity_dfp = data.frame(text=cp, polarity=polarityp, stringsAsFactors=FALSE)
+qplot(polarityp, data=polarity_dfp)
+
+```
+
+# Emotion table
+```{r message=FALSE, warning=FALSE}
+#classify emotion
+class_emop = classify_emotion(cp, algorithm="bayes", prior=1.0)
+
+#get emotion best fit
+emotionp = class_emop[,7]
+
+#substitute NA's by "unknown"
+emotionp[is.na(emotionp)] = "unknown"
+
+#data frame with results
+emo_dfp = data.frame(text=cp, emotion=emotionp, stringsAsFactors=FALSE)
+
+#sort data frame
+emo_dfp = within(emo_dfp, emotionp <- factor(emotionp, levels=names(sort(table(emotionp), decreasing=TRUE))))
+  
+#plot distribution of emotions
+ggplot(emo_dfp, aes(x=emotion)) + geom_bar(aes(y=..count.., fill=emotion)) +
+  scale_fill_brewer(palette="Dark2") + labs(x="emotion categories (incl. unknown)", y="number of tweets") + geom_text(stat="bin", aes(y = ..count..-0.5, label=..count..)) 
+```
+
+
+
+
+
