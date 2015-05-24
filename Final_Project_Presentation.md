@@ -1,0 +1,112 @@
+
+Exploring the #RStats Community on Twitter
+========================================================
+author: S. Hong, H. Berk, J. Hamski
+date: 27 May 2015
+
+Why bother analyzing data from Twitter?
+========================================================  
+  
+Twitter is a venue for professional skills development ...
+
+... not just a place to post cat pics and complain to airlines
+
+Twitter has an API
+========================================================
+
+
+
+```r
+library(twitteR)
+
+setup_twitter_oauth(consumer_key,
+                    consumer_secret,
+                    access_token,
+                    access_secret)
+```
+
+```
+[1] "Using direct authentication"
+```
+
+```r
+#Who uses the #RStats hashtag the most?
+r.stats.search <- searchTwitter("#Rstats", n=1000)
+```
+
+Who's active and influential? 
+========================================================
+
+
+```r
+# For the top ten tweeters of the #RStats hashtag...
+
+followers <- user$getFollowers(n=200)
+favorites <- user$getFavorites(n=200)
+```
+
+Problem-solving Technique - Dummy Dataset
+========================================================
+(1) Play with API to know it's capabilities
+(2) Create a dummy dataset to plan out DB build
+(3) Go back to the API to get data in a reasonable format
+
+```r
+sean <- c("nate", "matt", "sara", "pete", "laura")
+laura <- c("maura", "sean", "greg", "matt", "sara")
+albert <- c("nate", "sara", "roger", "maura")
+
+add.rel <- function(flwr, user){
+  user = getOrCreateNode(graph, "Name", name=user)
+  flwr = getOrCreateNode(graph, "Name", name=flwr)
+  createRel(flwr, "FOLLOWS", user)}
+
+user <- "sean"
+a <- lapply(sean, FUN = add.rel, user = user)
+```
+
+Create Neo4j Graph Database
+========================================================
+
+
+```r
+add.rel.followers <- function(flwr, user){
+  user = getOrCreateNode(graph, "Name", name=user)
+  flwr = getOrCreateNode(graph, "Name", name=flwr)
+  createRel(flwr, "FOLLOWS", user)}
+
+for (i in 1:length(users)){
+  a <- lapply(unlist(unname(followers[i])), FUN = add.rel.followers, user = users[i])}
+
+add.rel.favorites <- function(flwr, user){
+  user = getOrCreateNode(graph, "Name", name=user)
+  flwr = getOrCreateNode(graph, "Name", name=flwr)
+  createRel(flwr, "FAVORITED", user)}
+
+for (i in 1:length(users)){
+  a <- lapply(unlist(unname(favorites[i])), FUN = add.rel.favorites, user = users.fav[i])}
+```
+
+The Neo4j Graph - it's huge!
+========================================================
+![](Twitter_Graph_full.png)
+API limits depth (e.g. followers per user), Processing/memory limits bredth (i.e. how many users we can incorporate their favorites/followers)
+
+Social Graphing Conclusion
+========================================================
+* API limits depth of analysis
+  + Favorites limited to 200 by Twitter API
+* Processing/memory limits bredth of analysis 
+  + For how many users are we getting their favorites/followers? Every time you get the followers for another user your node count increases by their total follower count 
+  + If you are focusing on key influencers (e.g. Hadley Wickham with 15K followers), your relationship count increases by n x (average follower count) and your node count by slightly less than that since some users will already be in the graph
+
+
+Who Should you follow?
+========================================================
+ttt
+
+
+
+```
+Error in eval(expr, envir, enclos) : object 'test' not found
+```
