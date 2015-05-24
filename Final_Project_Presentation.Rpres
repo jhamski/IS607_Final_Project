@@ -1,0 +1,95 @@
+
+Exploring the #RStats Community on Twitter
+========================================================
+author: S. Hong, H. Berk, J. Hamski
+date: 27 May 2015
+
+Why bother analyzing data from Twitter?
+========================================================  
+  
+Twitter is a venue for professional skills development ...
+
+... not just a place to post cat pics and complain to airlines
+
+Twitter has an API
+========================================================
+```{r, echo=FALSE}
+key <- scan("api_key.txt", what="charsacter")
+
+consumer_key <- key[1]
+consumer_secret <- key[2]
+access_token <- key[3]
+access_secret <- key[4]
+```
+
+```{r}
+library(twitteR)
+
+setup_twitter_oauth(consumer_key,
+                    consumer_secret,
+                    access_token,
+                    access_secret)
+
+#Who uses the #RStats hashtag the most?
+r.stats.search <- searchTwitter("#Rstats", n=1000)
+
+```
+
+Who's active and influential? 
+========================================================
+
+```{r, eval=FALSE}
+# For the top ten tweeters of the #RStats hashtag...
+
+followers <- user$getFollowers(n=200)
+favorites <- user$getFavorites(n=200)
+
+```
+
+Problem-solving Technique - Dummy Dataset
+========================================================
+(1) Play with API to know it's capabilities
+(2) Create a dummy dataset to plan out DB build
+(3) Go back to the API to get data in a reasonable format
+```{r, eval=FALSE}
+sean <- c("nate", "matt", "sara", "pete", "cate", "laura")
+laura <- c("maura", "sean", "greg", "matt", "sara")
+albert <- c("nate", "sara", "roger", "maura")
+
+add.rel <- function(flwr, user){
+  user = getOrCreateNode(graph, "Name", name=user)
+  flwr = getOrCreateNode(graph, "Name", name=flwr)
+  createRel(flwr, "FOLLOWS", user)}
+
+user <- "sean"
+a <- lapply(sean, FUN = add.rel, user = user)
+
+```
+
+Create Neo4j Graph Database
+========================================================
+
+```{r, eval=FALSE}
+add.rel.followers <- function(flwr, user){
+  user = getOrCreateNode(graph, "Name", name=user)
+  flwr = getOrCreateNode(graph, "Name", name=flwr)
+  createRel(flwr, "FOLLOWS", user)}
+
+for (i in 1:length(users)){
+  a <- lapply(unlist(unname(followers[i])), FUN = add.rel.followers, user = users[i])}
+
+add.rel.favorites <- function(flwr, user){
+  user = getOrCreateNode(graph, "Name", name=user)
+  flwr = getOrCreateNode(graph, "Name", name=flwr)
+  createRel(flwr, "FAVORITED", user)}
+
+for (i in 1:length(users)){
+  a <- lapply(unlist(unname(favorites[i])), FUN = add.rel.favorites, user = users.fav[i])}
+```
+
+Slide With Plot
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```

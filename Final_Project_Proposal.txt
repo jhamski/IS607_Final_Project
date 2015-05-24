@@ -1,0 +1,7 @@
+Social media has become a key communication platform for professional skills development, in addition to a place to share selfies and rants. For our final project, we aim to analyze the R Project for Statistical Computing (R) community on Twitter to uncover insights into how influence is held and information is shared. This project will also showcase a variety of skills developed through IS607, including the use of Rest APIs, the R programming language and the neo4j graph database.
+
+Some goals of our project are:
+- Create a graph of following/retweet/favorite networks to discover influencers. The focus here will be on notable personalities/sites, such as Hadley Wickham and R-bloggers.
+- Conduct a sentiment analysis to categorize the attitudes, opinions and emotions expressed by the community. The most likely candidate for analysis is the hashtag #rstats, but other hashtags/keywords will be considered.
+- Look at a comparison between the R and Python communities via an analysis of #rstats vs. #pydata hashtags (most likely along one simple dimension).
+- Visualize results using appropriate methods, including the property graph model, word clouds, word frequency histograms and more.
