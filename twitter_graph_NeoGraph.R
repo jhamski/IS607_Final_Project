@@ -34,7 +34,7 @@ users <- names(followers)
 for (i in 1:length(users)){
   a <- lapply(unlist(unname(followers[i])), FUN = add.rel.followers, user = users[i])}
 
-# Favorites - runs slow
+# Favorites
 add.rel.favorites <- function(flwr, user){
   user = getOrCreateNode(graph, "Name", name=user)
   flwr = getOrCreateNode(graph, "Name", name=flwr)
