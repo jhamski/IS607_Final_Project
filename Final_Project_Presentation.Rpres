@@ -90,7 +90,6 @@ for (i in 1:length(users)){
 The Neo4j Graph - it's huge!
 ========================================================
 ![](Twitter_Graph_full.png)
-API limits depth (e.g. followers per user), Processing/memory limits bredth (i.e. how many users we can incorporate their favorites/followers)
 
 Social Graphing Conclusion
 ========================================================
